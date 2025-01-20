@@ -23,6 +23,7 @@ from opentelemetry.exporter.otlp.proto.common._internal.trace_encoder import (
     encode_spans,
 )
 from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
+from opentelemetry.instrumentation.urllib import URLLibInstrumentor  # type: ignore
 from opentelemetry.sdk.resources import Resource
 from opentelemetry.sdk.trace import ReadableSpan, TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor, SpanExporter, SpanExportResult
@@ -33,6 +34,8 @@ import ops.jujucontext
 import ops.tracing._buffer
 
 logger = logging.getLogger(__name__)
+# Trace `urllib` usage when talking to Pebble
+URLLibInstrumentor().instrument()
 
 _OTLP_SPAN_EXPORTER_TIMEOUT = 1  # seconds
 """How much to give OTLP span exporter has to push traces to the backend."""
@@ -57,6 +60,7 @@ class ProxySpanExporter(SpanExporter):
         # - 2s for live data
         deadline = time.monotonic() + 6
 
+        # FIXME remove this dev crud
         # __import__("pdb").set_trace()
         import threading
 

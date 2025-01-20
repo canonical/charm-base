@@ -79,6 +79,7 @@ from typing import (
     Union,
 )
 
+import opentelemetry.trace
 import websocket
 
 from ops._private import timeconv, yaml
@@ -343,6 +344,7 @@ class _WebSocket(Protocol):
 
 
 logger = logging.getLogger(__name__)
+tracer = opentelemetry.trace.get_tracer(__name__)
 
 
 class _NotProvidedFlag:
@@ -2028,6 +2030,7 @@ class Client:
             raise ProtocolError(f'expected Content-Type {expected!r}, got {ctype!r}')
         return options
 
+    @tracer.start_as_current_span('Pebble._request_raw')  # type: ignore
     def _request_raw(
         self,
         method: str,
