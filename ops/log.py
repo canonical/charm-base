@@ -14,6 +14,7 @@
 
 """Interface to emit messages to the Juju logging system."""
 
+import contextvars
 import logging
 import sys
 import types
@@ -25,9 +26,12 @@ from ops.model import _ModelBackend
 class JujuLogHandler(logging.Handler):
     """A handler for sending logs to Juju via juju-log."""
 
+    foo: contextvars.ContextVar[bool]
+
     def __init__(self, model_backend: _ModelBackend, level: int = logging.DEBUG):
         super().__init__(level)
         self.model_backend = model_backend
+        self.foo = contextvars.ContextVar('foo', default=False)
 
     def emit(self, record: logging.LogRecord):
         """Send the specified logging record to the Juju backend.
@@ -35,7 +39,21 @@ class JujuLogHandler(logging.Handler):
         This method is not used directly by the ops library, but by
         :class:`logging.Handler` itself as part of the logging machinery.
         """
-        self.model_backend.juju_log(record.levelname, self.format(record))
+        # FIXME strategies to prevent infinite recursion
+        # 1. block OTEL logging (as well as any other logging, really)
+        # until this function is done.
+        # which is a bit tricky when we've got a helper OTEL thread.
+        # 2. pre-emptively disable or filter out logs from OTEL
+        # 3. prevent recursion on this very method only
+        # ^--- will start with this, pending team discussion
+        if self.foo.get():
+            return
+
+        token = self.foo.set(True)
+        try:
+            self.model_backend.juju_log(record.levelname, self.format(record))
+        finally:
+            self.foo.reset(token)
 
 
 def setup_root_logging(

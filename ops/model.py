@@ -57,6 +57,8 @@ from typing import (
     get_args,
 )
 
+import opentelemetry.trace
+
 import ops
 import ops.pebble as pebble
 from ops._private import timeconv, yaml
@@ -111,6 +113,7 @@ _NetworkDict = TypedDict(
 
 
 logger = logging.getLogger(__name__)
+tracer = opentelemetry.trace.get_tracer(__name__)
 
 MAX_LOG_LINE_LEN = 131071  # Max length of strings to pass to subshell.
 
@@ -2748,7 +2751,9 @@ class Container:
                     dstpath.parent.mkdir(parents=True, exist_ok=True)
                     with self.pull(info.path, encoding=None) as src:
                         with dstpath.open(mode='wb') as dst:
-                            shutil.copyfileobj(src, dst)
+                            with tracer.start_as_current_span('shutil.copyfileobj') as span:  # type: ignore
+                                span.set_attribute('dstpath', str(dstpath))  # type: ignore
+                                shutil.copyfileobj(src, dst)
             except (OSError, pebble.Error) as err:
                 errors.append((str(source_path), err))
         if errors:
@@ -3308,9 +3313,11 @@ class _ModelBackend:
         }
         if input_stream:
             kwargs.update({'input': input_stream})
-        which_cmd = shutil.which(args[0])
-        if which_cmd is None:
-            raise RuntimeError(f'command not found: {args[0]}')
+        with tracer.start_as_current_span('shutil.which') as span:  # type: ignore
+            span.set_attribute('program name', args[0])  # type: ignore
+            which_cmd = shutil.which(args[0])
+            if which_cmd is None:
+                raise RuntimeError(f'command not found: {args[0]}')
         args = (which_cmd,) + args[1:]
         if use_json:
             args += ('--format=json',)
@@ -3471,7 +3478,9 @@ class _ModelBackend:
                 args.extend(['--k8s-resources', str(k8s_res_path)])
             self._run('pod-spec-set', *args)
         finally:
-            shutil.rmtree(str(tmpdir))
+            with tracer.start_as_current_span('shutil.rmtree') as span:  # type: ignore
+                span.set_attribute('tmpdir', str(tmpdir))  # type: ignore
+                shutil.rmtree(str(tmpdir))
 
     def status_get(self, *, is_app: bool = False) -> '_StatusDict':
         """Get a status of a unit or an application.
