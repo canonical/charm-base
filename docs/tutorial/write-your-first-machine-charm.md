@@ -1,7 +1,7 @@
 (write-your-first-machine-charm)=
 # Write your first machine charm
 
-In this tutorial you will write a {external+juju:ref}`machine charm <machine-charm>` for Juju using ([Charmcraft](https://canonical-charmcraft.readthedocs-hosted.com/en/stable/) and) Ops.
+In this tutorial you will write a {external+juju:ref}`machine charm <charm>` for Juju using ([Charmcraft](https://canonical-charmcraft.readthedocs-hosted.com/en/stable/) and) Ops.
 
 
 **What you'll need:** 
@@ -35,7 +35,7 @@ The application has other features that we can exploit, but for now this is enou
 
 ## Set up your development environment
 
-> See more: {external+juju:ref}`Juju | Manage your deployment environment > Automatically <manage-your-deployment-environment>` for instructions on how to set up your development environment so that it's ready for you to test-deploy your charm. At the charm directory step, call it `microsample-vm`. At the cloud step, choose LXD. 
+> See more: {external+juju:ref}`Juju | Manage your deployment environment > Automatically <manage-your-deployment>` for instructions on how to set up your development environment so that it's ready for you to test-deploy your charm. At the charm directory step, call it `microsample-vm`. At the cloud step, choose LXD. 
 
 ```{important}
 
@@ -132,7 +132,7 @@ bases:
       channel: "22.04"
 
 ```
-> See more: {external+charmcraft:ref}`Charmcraft | File `charmcraft.yaml <file-charmcraft-yaml>`
+> See more: {external+charmcraft:ref}`Charmcraft | File charmcraft.yaml <charmcraft-yaml-file>`
 
 Now open the `src/charm.py` file and update it as below (you'll have to add an import statement for `os` and an observer and handler for the `install` event -- in the definition of which you'll be using `os` and `ops`). 
 
@@ -166,7 +166,7 @@ if __name__ == "__main__":  # pragma: nocover
     ops.main(MicrosampleVmCharm)  # type: ignore
 ```
 
-> See more: {external+charmcraft:ref}`Charmcraft | File src/charm.py <file-src-charm-py`,  {ref}`run-workloads-with-a-charm-machines`
+> See more: {external+charmcraft:ref}`Charmcraft | File src/charm.py <src-charm-py-file>`,  {ref}`run-workloads-with-a-charm-machines`
 
 Next, in your Multipass VM shell, inside your project directory, run `charmcraft pack` to pack the charm. It may take a few minutes the first time around but, when it's done, your charm project should contain a `.charm` file. Sample session:
 
@@ -281,7 +281,7 @@ config:
 ```
 
 
-> See more: {external+charmcraft:ref}`Charmcraft | File charmcraft.yaml | Key config <file-charmcraft-yaml-config>`
+> See more: {external+charmcraft:ref}`Charmcraft | File charmcraft.yaml | Key config <config-yaml-file>`
 
 Then, in the `src/charm.py` file, update the `_on_install` function to make use of the new configuration option, as below:
 

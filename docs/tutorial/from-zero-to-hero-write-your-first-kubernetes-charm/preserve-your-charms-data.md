@@ -53,7 +53,7 @@ peers:
 ```
 
 
-> See more: {external+charmcraft:ref}`Charmcraft | File charmcraft.yaml <file-charmcraft-yaml>`
+> See more: {external+charmcraft:ref}`Charmcraft | File charmcraft.yaml <charmcraft-yaml-file>`
 
 ## Set and get data from the peer relation databag
 

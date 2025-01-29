@@ -1,6 +1,6 @@
 (manage-actions)=
 # How to manage actions
-> See first: {external+juju:ref}`Juju | Charm <action>`, {external+juju:ref}`Juju | Manage actions <manage-actions>`, {external+charmcraft:ref}`Charmcraft | Manage actions <manage-actions>`
+> See first: {external+juju:ref}`Juju | Charm <action>`, {external+juju:ref}`Juju | Manage actions <manage-actions>`, {external+charmcraft:ref}`Charmcraft | Manage actions <manage-charms>`
 
 ## Implement the feature
 
