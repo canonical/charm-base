@@ -603,7 +603,6 @@ class Framework(Object):
         @property
         def on(self) -> 'FrameworkEvents': ...  # noqa
 
-    @tracer.start_as_current_span('ops.Framework')  # type: ignore
     def __init__(
         self,
         storage: Union[SQLiteStorage, JujuStorage],
@@ -697,7 +696,6 @@ class Framework(Object):
         """Stop tracking the given object. See also _track."""
         self._objects.pop(obj.handle.path, None)
 
-    @tracer.start_as_current_span('ops.Framework.commit')  # type: ignore
     def commit(self) -> None:
         """Save changes to the underlying backends."""
         # Give a chance for objects to persist data they want to before a commit is made.
@@ -871,12 +869,16 @@ class Framework(Object):
                 return True
         return False
 
-    @tracer.start_as_current_span('ops.Framework._emit')  # type: ignore
     def _emit(self, event: EventBase):
         """See BoundEvent.emit for the public way to call this."""
         saved = False
         event_path = event.handle.path
         event_kind = event.handle.kind
+        ops_event = event.__class__.__module__.startswith('ops.')
+        opentelemetry.trace.get_current_span().add_event(
+            f'{"ops." if ops_event else ""}{event.__class__.__name__}',
+            attributes={'deferred': event.deferred, 'kind': event_kind},
+        )
         parent = event.handle.parent
         assert isinstance(parent, Handle), 'event handle must have a parent'
         parent_path = parent.path
@@ -913,7 +915,6 @@ class Framework(Object):
         if saved:
             self._reemit(event_path)
 
-    @tracer.start_as_current_span('ops.Framework.reemit')  # type: ignore
     def reemit(self) -> None:
         """Reemit previously deferred events to the observers that deferred them.
 
