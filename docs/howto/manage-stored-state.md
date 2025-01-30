@@ -1,7 +1,7 @@
 (manage-stored-state)=
 # How to manage stored state
 
-> See first: [](storedstate-uses-limitations)
+> See first: {ref}`storedstate-uses-limitations`
 
 Data stored on a charm instance will not persist beyond the current Juju event,
 because a new charm instance is created to handle each event. In general, charms
@@ -120,17 +120,13 @@ store the data in the relation databag.
 
 #### Define a peer relation
 
-Update the `charmcraft.yaml` file to add a `peers` block, as below:
+Update the {external+charmcraft:ref}`charmcraft.yaml file <charmcraft-yaml-file>` to add a `peers` block, as below:
 
 ```yaml
 peers:
   charm-peer:
     interface: my_charm_peers
 ```
-
-<!-- UPDATE LINKS
-> Read more: [File ‘charmcraft.yaml`]()
--->
 
 #### Set and get data from the peer relation databag
 

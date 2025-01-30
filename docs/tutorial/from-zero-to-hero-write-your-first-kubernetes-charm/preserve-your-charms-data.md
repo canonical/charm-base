@@ -33,15 +33,11 @@ First, you can use an Ops construct called `Stored State`. With this strategy yo
 Second, you can make use of the Juju notion of 'peer relations'  and 'data bags'  and set up a peer relation data bag. This will help you store the information in the Juju's database backend. 
 
 
-<!-- UPDATE LINKS
-> Read more: [Peer relations](https://juju.is/docs/juju/relation#heading--peer)
--->
+> See more: {external+juju:ref}`Juju | Peer relation <peer-relation>`
 
 Third, when you have confidential data, you can use Juju secrets (from Juju 3.1 onwards).
 
-<!-- UPDATE LINKS
-> Read more: [Juju | Secret](https://juju.is/docs/juju/secret)
--->
+> See more: {external+juju:ref}`Juju | Secret <secret>`
 
 
 In this chapter we will adopt the second strategy, that is, we will store charm data in a peer relation databag. (We will explore the third strategy in a different scenario in the next chapter.)  We will illustrate this strategy with an artificial example where we save the counter of how many times the application pod has been restarted.
@@ -56,9 +52,8 @@ peers:
     interface: fastapi_demo_peers
 ```
 
-<!-- UPDATE LINKS
-> Read more: [File ‘charmcraft.yaml`]()
--->
+
+> See more: {external+charmcraft:ref}`Charmcraft | File charmcraft.yaml <charmcraft-yaml-file>`
 
 ## Set and get data from the peer relation databag
 
