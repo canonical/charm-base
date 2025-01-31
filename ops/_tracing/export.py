@@ -67,7 +67,6 @@ class ProxySpanExporter(SpanExporter):
 
         Note: to avoid data loops or recursion, this function cannot be instrumented.
         """
-        logging.debug(f'FIXME export {len(spans)=}')
         with suppress_juju_log_handler():
             # Note:
             # this is called in a helper thread, which is daemonic,
@@ -81,6 +80,7 @@ class ProxySpanExporter(SpanExporter):
             assert spans  # the BatchSpanProcessor won't call us if there's no data
             # TODO:  this will change in the JSON experiment
             data: bytes = trace_encoder.encode_spans(spans).SerializePartialToString()
+            logging.debug(f'FIXME export {len(spans)=} {len(data)=}')
             rv = self.buffer.pump(data)
             logging.debug('FIXME saved')
             assert rv
