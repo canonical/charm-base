@@ -885,6 +885,7 @@ class _GenericLazyMapping(Mapping[str, _LazyValueType], ABC):
     _lazy_data: Optional[Dict[str, _LazyValueType]] = None
 
     @abstractmethod
+    # FIXME instrument here, or individual access?
     def _load(self) -> Dict[str, _LazyValueType]:
         raise NotImplementedError()
 
@@ -898,20 +899,27 @@ class _GenericLazyMapping(Mapping[str, _LazyValueType], ABC):
     def _invalidate(self):
         self._lazy_data = None
 
+    # FIXME isntrument all these?
     def __contains__(self, key: str) -> bool:
-        return key in self._data
+        with tracer.start_as_current_span(f"x in ops.{self.__class__.__name__}"):  # type: ignore
+            return key in self._data
 
     def __len__(self) -> int:
-        return len(self._data)
+        with tracer.start_as_current_span(f"len(ops.{self.__class__.__name__})"):  # type: ignore
+            return len(self._data)
 
     def __iter__(self):
-        return iter(self._data)
+        with tracer.start_as_current_span(f"for x in ops.{self.__class__.__name__}"):  # type: ignore
+            return iter(self._data)
 
     def __getitem__(self, key: str) -> _LazyValueType:
-        return self._data[key]
+        # FIXME code path also covers .get()
+        with tracer.start_as_current_span(f"ops.{self.__class__.__name__}[x]"):  # type: ignore
+            return self._data[key]
 
     def __repr__(self) -> str:
-        return repr(self._data)
+        with tracer.start_as_current_span(f"repr(ops.{self.__class__.__name__})"):  # type: ignore
+            return repr(self._data)
 
 
 class LazyMapping(_GenericLazyMapping[str]):
@@ -952,6 +960,8 @@ class RelationMapping(Mapping[str, List['Relation']]):
     def __iter__(self) -> Iterable[str]:
         return iter(self._data)
 
+    # FIXME: called by bass class for .get() too
+    @tracer.start_as_current_span("ops.RelationMapping[x]")  # type: ignore
     def __getitem__(self, relation_name: str) -> List['Relation']:
         is_peer = relation_name in self._peers
         relation_list: Optional[List[Relation]] = self._data[relation_name]
@@ -1020,6 +1030,7 @@ class BindingMapping(Mapping[str, 'Binding']):
         self._backend = backend
         self._data: _BindingDictType = {}
 
+    # FIXME check
     def get(self, binding_key: Union[str, 'Relation']) -> 'Binding':
         """Get a specific Binding for an endpoint/relation.
 
@@ -1068,6 +1079,7 @@ class Binding:
         return Network(self._backend.network_get(name, relation_id))
 
     @property
+    # FIXME check
     def network(self) -> 'Network':
         """The network information for this binding."""
         if self._network is None:
@@ -1782,6 +1794,7 @@ class RelationData(Mapping[Union['Unit', 'Application'], 'RelationDataContent'])
     :attr:`Relation.data`
     """
 
+    # FIXME check
     def __init__(self, relation: Relation, our_unit: Unit, backend: '_ModelBackend'):
         self.relation = weakref.proxy(relation)
         self._data: Dict[Union[Unit, Application], RelationDataContent] = {
@@ -1833,6 +1846,7 @@ class RelationDataContent(LazyMapping, MutableMapping[str, str]):
         # unrestricted, allowing test code to read/write databags at will.
         return bool(self._backend._hook_is_running)
 
+    # FIXME instrument this or LazyMapping?
     def _load(self) -> '_RelationDataContent_Raw':
         """Load the data from the current entity / relation."""
         try:
@@ -2187,6 +2201,7 @@ class Pod:
     def __init__(self, backend: '_ModelBackend'):
         self._backend = backend
 
+    @tracer.start_as_current_span("ops.Pod.set_spec")  # type: ignore
     def set_spec(self, spec: 'K8sSpec', k8s_resources: Optional['K8sSpec'] = None):
         """Set the specification for pods that Juju should start in kubernetes.
 
@@ -2219,6 +2234,8 @@ class StorageMapping(Mapping[str, List['Storage']]):
     def __iter__(self):
         return iter(self._storage_map)
 
+    # FIXME: called by bass class for .get() too
+    @tracer.start_as_current_span("ops.StorageMapping[]")  # type: ignore
     def __getitem__(self, storage_name: str) -> List['Storage']:
         if storage_name not in self._storage_map:
             meant = ', or '.join(repr(k) for k in self._storage_map)
@@ -2231,6 +2248,8 @@ class StorageMapping(Mapping[str, List['Storage']]):
                 storage_list.append(storage)
         return storage_list
 
+    # FIXME doesn't seem used by any charm?
+    @tracer.start_as_current_span("ops.StorageMapping.request")  # type: ignore
     def request(self, storage_name: str, count: int = 1):
         """Requests new storage instances of a given name.
 
