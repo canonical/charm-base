@@ -36,6 +36,8 @@ from typing import (
     cast,
 )
 
+import opentelemetry.trace
+
 from ops import model
 from ops._private import yaml
 from ops.framework import (
@@ -90,6 +92,7 @@ class _ContainerBaseDict(TypedDict):
 
 
 logger = logging.getLogger(__name__)
+tracer = opentelemetry.trace.get_tracer(__name__)
 
 
 class HookEvent(EventBase):
@@ -1330,6 +1333,7 @@ class CharmBase(Object):
         @property
         def on(self) -> CharmEvents: ...  # noqa
 
+    @tracer.start_as_current_span('ops.CharmBase')  # type: ignore
     def __init__(self, framework: Framework):
         super().__init__(framework, None)
 

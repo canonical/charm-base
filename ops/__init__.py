@@ -54,6 +54,7 @@ This API provides core features to your charm, including:
 # that those symbols are part of the public API, so we have to add __all__.
 __all__ = [  # noqa: RUF022 `__all__` is not sorted
     '__version__',
+    'set_tracing_destination',
     'main',
     'pebble',
     # From charm.py
@@ -333,6 +334,7 @@ from .model import (
 # NOTE: don't import testing or Harness here, as that's a test-time concern
 # rather than a runtime concern.
 
+from ._tracing import set_tracing_destination
 from .version import version as __version__
 
 
