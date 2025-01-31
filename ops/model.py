@@ -222,6 +222,7 @@ class Model:
         """
         return self._backend.model_uuid
 
+    # FIXME maybe skip this?
     @tracer.start_as_current_span('ops.Model.get_unit')  # type: ignore
     def get_unit(self, unit_name: str) -> 'Unit':
         """Get an arbitrary unit by name.
@@ -2171,6 +2172,7 @@ class Resources:
         self._backend = backend
         self._paths: Dict[str, Optional[Path]] = {name: None for name in names}
 
+    @tracer.start_as_current_span("ops.Resources.fetch")  # type: ignore
     def fetch(self, name: str) -> Path:
         """Fetch the resource from the controller or store.
 
